@@ -1,4 +1,4 @@
-// --- DOM Elements --
+// --- DOM Elements ---
 const startScreen = document.getElementById('startScreen');
 const startButton = document.getElementById('startButton');
 const spmDisplay = document.getElementById('spmDisplay');
@@ -12,11 +12,19 @@ const logArea = document.getElementById('logArea');
 // --- State Management ---
 let currentSpm = 80;
 let currentHr = 70;
+let logHistory = [];
 
-// --- Logger ---
+// --- Logger (Improved for Debugging) ---
 function log(message) {
     console.log(message);
-    logArea.textContent = `ログ: ${message}`;
+    const timestamp = new Date().toLocaleTimeString();
+    // ログ履歴の先頭に新しいメッセージを追加
+    logHistory.unshift(`[${timestamp}] ${message}`); 
+    if (logHistory.length > 10) {
+        logHistory.pop(); // ログは最新10件まで保持
+    }
+    // 画面にログ履歴を表示
+    logArea.innerHTML = logHistory.join('<br>');
 }
 
 // --- Music Engine (Tone.js) ---
@@ -37,9 +45,9 @@ function updateMusicAndUI() {
     spmDisplay.textContent = currentSpm.toFixed(0);
     hrDisplay.textContent = currentHr.toFixed(0);
     bpmDisplay.textContent = currentSpm.toFixed(0);
-    Tone.Transport.bpm.rampTo(currentSpm, 0.5);
+    Tone.Transport.bpm.rampTo(currentSpm, 1.0);
 
-    const hrNormalized = (currentHr - 60) / 100;
+    const hrNormalized = Math.max(0, Math.min(1, (currentHr - 60) / 100));
     if (currentHr < 90) {
         synth.set({ oscillator: { type: 'sine' } });
         timbreDisplay.textContent = '穏やか';
@@ -56,55 +64,52 @@ function updateMusicAndUI() {
 
 // --- Accelerometer (SPM Detection) ---
 const stepTimestamps = [];
-const ACCEL_THRESHOLD = 11; // 歩行検出の閾値 (要調整)
+const ACCEL_THRESHOLD = 11; 
 let lastAccelMagnitude = 0;
 
 function handleMotionEvent(event) {
     const { x, y, z } = event.accelerationIncludingGravity;
-    if(x === null || y === null || z === null) return;
+    if (x === null) return;
     const magnitude = Math.sqrt(x*x + y*y + z*z);
     
-    // 閾値を超えた瞬間をステップとして検出
     if (magnitude > ACCEL_THRESHOLD && lastAccelMagnitude <= ACCEL_THRESHOLD) {
         const now = Date.now();
         stepTimestamps.push(now);
-        if (stepTimestamps.length > 5) {
-            stepTimestamps.shift(); // 古いデータを削除
-        }
-
-        if (stepTimestamps.length > 1) {
+        if (stepTimestamps.length > 10) stepTimestamps.shift(); 
+        if (stepTimestamps.length > 2) {
             const duration = now - stepTimestamps[0];
             const avgInterval = duration / (stepTimestamps.length - 1);
-            const spm = 60000 / avgInterval;
-            // SPMを滑らかに更新
-            currentSpm = currentSpm * 0.7 + spm * 0.3;
+            if (avgInterval > 0) {
+                 const spm = 60000 / avgInterval;
+                 currentSpm = currentSpm * 0.7 + spm * 0.3;
+            }
         }
     }
     lastAccelMagnitude = magnitude;
 }
 
 async function initAccelerometer() {
-    log('加速度センサーの許可をリクエストします...');
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    log('加速度センサーの許可をリクエスト...');
+    if (typeof DeviceMotionEvent.requestPermission === 'function') { // iOS 13+
         try {
             const permissionState = await DeviceMotionEvent.requestPermission();
+            log(`モーションセンサー許可状態: ${permissionState}`);
             if (permissionState === 'granted') {
                 window.addEventListener('devicemotion', handleMotionEvent);
                 accelStatusDot.classList.replace('bg-gray-500', 'bg-green-500');
-                log('加速度センサーに接続しました。');
+                log('加速度センサー接続完了');
             } else {
-                log('加速度センサーの許可がありません。');
+                log('加速度センサーの許可がありません');
                 accelStatusDot.classList.replace('bg-gray-500', 'bg-red-500');
             }
         } catch (error) {
-            log('加速度センサーのリクエストエラー: ' + error.message);
+            log(`加速度センサーエラー: ${error.message}`);
             accelStatusDot.classList.replace('bg-gray-500', 'bg-red-500');
         }
-    } else {
-        // For devices that don't need explicit permission (e.g., Android Chrome)
+    } else { // Androidなど
         window.addEventListener('devicemotion', handleMotionEvent);
         accelStatusDot.classList.replace('bg-gray-500', 'bg-green-500');
-        log('加速度センサーに接続しました。');
+        log('加速度センサーに自動接続しました');
     }
 }
 
@@ -112,64 +117,73 @@ async function initAccelerometer() {
 function parseHeartRate(value) {
     const flags = value.getUint8(0);
     const rate16Bits = flags & 0x1;
-    let heartRate;
-    if (rate16Bits) {
-        heartRate = value.getUint16(1, true);
-    } else {
-        heartRate = value.getUint8(1);
-    }
-    return heartRate;
+    return rate16Bits ? value.getUint16(1, true) : value.getUint8(1);
 }
 
 async function initBluetooth() {
-    log('Bluetoothデバイスを探しています...');
+    log('Bluetoothデバイスを検索します...');
     if (!navigator.bluetooth) {
-        log('Web Bluetoothがこのブラウザではサポートされていません。');
+        log('エラー: このブラウザはWeb Bluetooth非対応です');
         btStatusDot.classList.replace('bg-gray-500', 'bg-red-500');
         return;
     }
     try {
+        log('デバイス選択ポップアップを表示します...');
         const device = await navigator.bluetooth.requestDevice({
             filters: [{ services: ['heart_rate'] }],
             acceptAllDevices: false
         });
-        log(`デバイス「${device.name}」に接続中...`);
+
+        log(`デバイス[${device.name}]を発見。接続中...`);
+        btStatusDot.classList.replace('bg-gray-500', 'bg-yellow-500'); // 接続中は黄色
+        
         const server = await device.gatt.connect();
-        log('GATTサーバーに接続しました。');
+        log('GATTサーバーに接続完了');
+        
         const service = await server.getPrimaryService('heart_rate');
-        log('心拍数サービスを取得しました。');
+        log('心拍数サービスを取得');
+        
         const characteristic = await service.getCharacteristic('heart_rate_measurement');
-        log('心拍数特性を取得しました。通知を開始します。');
+        log('心拍数特性(Characteristic)を取得');
+        
         await characteristic.startNotifications();
+        log('心拍数の通知待機中...');
+        
         characteristic.addEventListener('characteristicvaluechanged', (event) => {
-            const hr = parseHeartRate(event.target.value);
-            currentHr = hr;
+            currentHr = parseHeartRate(event.target.value);
+            
+            // 最初のデータ受信時に緑色にする
+            if(btStatusDot.classList.contains('bg-yellow-500')){
+                 btStatusDot.classList.replace('bg-yellow-500', 'bg-green-500');
+                 log(`心拍数[${currentHr}]の受信を開始しました！`);
+            }
+            
+            // データ受信を視覚的にフィードバック
+            hrDisplay.classList.add('transition-all', 'duration-100', 'text-white');
+            setTimeout(()=> hrDisplay.classList.remove('text-white'), 200);
         });
-        btStatusDot.classList.replace('bg-gray-500', 'bg-green-500');
-        log(`デバイス「${device.name}」に接続完了`);
+        
     } catch(error) {
-        log('Bluetooth接続エラー: ' + error.message);
+        log(`Bluetoothエラー: ${error.message}`);
+        btStatusDot.classList.replace('bg-yellow-500', 'bg-red-500');
         btStatusDot.classList.replace('bg-gray-500', 'bg-red-500');
     }
 }
 
 // --- Main Initialization ---
 startButton.addEventListener('click', async () => {
-    log('初期化を開始します...');
-    // Start audio context
+    log('初期化を開始します');
     await Tone.start();
+    log('オーディオコンテキストを開始しました');
     Tone.Transport.start();
     pattern.start(0);
-
-    // Hide start screen
+    
     startScreen.style.opacity = '0';
     setTimeout(() => startScreen.style.display = 'none', 500);
 
-    // Connect sensors
     await initAccelerometer();
     await initBluetooth();
 
-    // Start the update loop
-    setInterval(updateMusicAndUI, 200);
-    log('システムの準備が完了しました。');
+    setInterval(updateMusicAndUI, 500);
 });
+
