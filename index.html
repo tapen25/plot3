@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>身体と音楽を結びつけるプロトタイプ</title>
+    <!-- 外部ライブラリの読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <!-- スタイルの定義 -->
+    <style>
+        .status-dot {
+            display: inline-white;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen font-sans">
+    
+    <!-- 開始画面 -->
+    <div id="startScreen" class="absolute inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-20 transition-opacity duration-500">
+        <button id="startButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg transform hover:scale-105 transition-transform">
+            開始
+        </button>
+    </div>
+
+    <!-- メイン画面 -->
+    <div class="w-full max-w-md mx-auto bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 space-y-6">
+        
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-white">プロトタイプ３</h1>
+            <p class="text-gray-400 mt-1">身体を動かすと音が鳴る</p>
+        </div>
+        
+        <!-- 状態表示パネル -->
+        <div class="bg-gray-700 rounded-xl p-4 grid grid-cols-2 gap-4 text-center">
+            <div>
+                <div class="flex items-center justify-center mb-2">
+                    <span id="accelStatusDot" class="status-dot bg-gray-500"></span>
+                    <p class="text-sm text-gray-400">歩行ペース (SPM)</p>
+                </div>
+                <p id="spmDisplay" class="text-3xl font-bold text-cyan-400">--</p>
+                <p class="text-sm text-gray-400 mt-2">♪ 音楽テンポ (BPM)</p>
+                <p id="bpmDisplay" class="text-lg font-semibold text-cyan-300">--</p>
+            </div>
+            <div>
+                 <div class="flex items-center justify-center mb-2">
+                    <span id="btStatusDot" class="status-dot bg-gray-500"></span>
+                    <p class="text-sm text-gray-400">心拍数 (HR)</p>
+                </div>
+                <p id="hrDisplay" class="text-3xl font-bold text-rose-400">--</p>
+                <p class="text-sm text-gray-400 mt-2">♪ 音色</p>
+                <p id="timbreDisplay" class="text-lg font-semibold text-rose-300">--</p>
+            </div>
+        </div>
+
+        <!-- ログ表示エリア -->
+        <div class="bg-gray-900 rounded-lg p-3 h-20 overflow-y-auto">
+            <p id="logArea" class="text-sm text-gray-400 font-mono">ログ: ここにセンサーの状態が表示される。</p>
+        </div>
+    </div>
+
+    <!-- 外部JavaScriptファイルの読み込み -->
+    <script src="main.js"></script>
+</body>
+</html>
