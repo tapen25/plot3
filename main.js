@@ -1,4 +1,4 @@
-// --- DOM Elements ---
+// --- DOM Elements --
 const startScreen = document.getElementById('startScreen');
 const startButton = document.getElementById('startButton');
 const spmDisplay = document.getElementById('spmDisplay');
