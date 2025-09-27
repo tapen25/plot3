@@ -1,57 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sensor Beat</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #121212;
-            color: #ffffff;
-            text-align: center;
-        }
-        #controlButton {
-            font-size: 1.5rem;
-            padding: 20px 40px;
-            border-radius: 50px;
-            border: none;
-            cursor: pointer;
-            background-color: #1db954;
-            color: white;
-            transition: background-color 0.3s;
-        }
-        #controlButton:hover {
-            background-color: #1ed760;
-        }
-        #infoPanel {
-            margin-top: 30px;
-            font-size: 1.2rem;
-            line-height: 1.8;
-        }
-        .label {
-            font-weight: bold;
-            color: #b3b3b3;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>心拍数モニター</title>
+  <script src="main.js" defer></script>
 </head>
 <body>
-
-    <button id="controlButton">START</button>
-
-    <div id="infoPanel">
-        <div><span class="label">STATUS:</span> <span id="statusText">IDLE</span></div>
-        <div><span class="label">BPM (Steps/min):</span> <span id="bpmText">--</span></div>
-        <div><span class="label">HEART RATE:</span> <span id="hrText">--</span></div>
-    </div>
-
-    <script src="main.js"></script>
-
+  <h1>心拍数</h1>
+  <button id="connect">接続</button>
+  <p id="bpm">-- bpm</p>
 </body>
 </html>
