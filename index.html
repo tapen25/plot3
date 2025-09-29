@@ -1,75 +1,79 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>身体と音楽の協奏プロトタイプ</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <style>
-        /* スライダーの見た目をカスタマイズ */
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>身体と音楽の協奏プロトタイプ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+  <style>
+    /* スライダーの見た目をカスタマイズ */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen font-sans">
-    <div id="startScreen" class="absolute inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-20">
-        <button id="startButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg transform hover:scale-105 transition-transform">
-            体験を開始する
-        </button>
+
+  <!-- スタート画面 -->
+  <div id="startScreen" class="absolute inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-20">
+    <button id="startButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg transform hover:scale-105 transition-transform">
+      体験を開始する
+    </button>
+  </div>
+
+  <!-- メインUI -->
+  <div class="w-full max-w-md mx-auto bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 space-y-6">
+    <div class="text-center">
+      <h1 class="text-2xl font-bold text-white">身体と音楽の協奏</h1>
+      <p class="text-gray-400 mt-1">あなたの身体が、音楽を奏でる</p>
     </div>
 
-    <div class="w-full max-w-md mx-auto bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 space-y-6">
-        
-        <div class="text-center">
-            <h1 class="text-2xl font-bold text-white">身体と音楽の協奏</h1>
-            <p class="text-gray-400 mt-1">あなたの身体が、音楽を奏でる</p>
-        </div>
-
-        <!--  -->
-        
-        <!-- 状態表示パネル -->
-        <div class="bg-gray-700 rounded-xl p-4 grid grid-cols-2 gap-4 text-center">
-            <div>
-                <p class="text-sm text-gray-400">指揮: 歩行ペース (SPM)</p>
-                <p id="spmDisplay" class="text-3xl font-bold text-cyan-400">80</p>
-                <p class="text-sm text-gray-400 mt-2">♪ 音楽テンポ (BPM)</p>
-                <p id="bpmDisplay" class="text-lg font-semibold text-cyan-300">80</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-400">感情: 心拍数 (HR)</p>
-                <p id="hrDisplay" class="text-3xl font-bold text-rose-400">70</p>
-                <p class="text-sm text-gray-400 mt-2">♪ 音色</p>
-                <p id="timbreDisplay" class="text-lg font-semibold text-rose-300">穏やか</p>
-            </div>
-        </div>
-
-        <!-- 操作パネル -->
-        <div class="pt-4 space-y-6">
-            <div>
-                <label for="spmSlider" class="text-lg font-semibold flex items-center justify-between">
-                    <span>🚶‍♂️ 歩行ペース</span>
-                    <span class="text-sm text-gray-400">(ゆっくり ↔ はやく)</span>
-                </label>
-                <input id="spmSlider" type="range" min="40" max="180" value="80" class="w-full h-3 bg-gray-600 rounded-lg appearance-none cursor-pointer mt-2 accent-cyan-400">
-            </div>
-            <div>
-                <label for="hrSlider" class="text-lg font-semibold flex items-center justify-between">
-                    <span>❤️ 心拍数</span>
-                     <span class="text-sm text-gray-400">(リラックス ↔ 興奮)</span>
-                </label>
-                <input id="hrSlider" type="range" min="60" max="160" value="70" class="w-full h-3 bg-gray-600 rounded-lg appearance-none cursor-pointer mt-2 accent-rose-400">
-            </div>
-        </div>
-        
+    <!-- 状態表示パネル -->
+    <div class="bg-gray-700 rounded-xl p-4 grid grid-cols-2 gap-4 text-center">
+      <div>
+        <p class="text-sm text-gray-400">指揮: 歩行ペース (SPM)</p>
+        <p id="spmDisplay" class="text-3xl font-bold text-cyan-400">80</p>
+        <p class="text-sm text-gray-400 mt-2">♪ 音楽テンポ (BPM)</p>
+        <p id="bpmDisplay" class="text-lg font-semibold text-cyan-300">80</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-400">感情: 心拍数 (HR)</p>
+        <p id="hrDisplay" class="text-3xl font-bold text-rose-400">70</p>
+        <p class="text-sm text-gray-400 mt-2">♪ 音色</p>
+        <p id="timbreDisplay" class="text-lg font-semibold text-rose-300">穏やか</p>
+      </div>
     </div>
 
-    
+    <!-- 操作パネル -->
+    <div class="pt-4 space-y-6">
+      <div>
+        <label for="spmSlider" class="text-lg font-semibold flex items-center justify-between">
+          <span>🚶‍♂️ 歩行ペース</span>
+          <span class="text-sm text-gray-400">(ゆっくり ↔ はやく)</span>
+        </label>
+        <input id="spmSlider" type="range" min="40" max="180" value="80"
+          class="w-full h-3 bg-gray-600 rounded-lg appearance-none cursor-pointer mt-2 accent-cyan-400"
+          aria-label="歩行ペース調整">
+      </div>
+      <div>
+        <label for="hrSlider" class="text-lg font-semibold flex items-center justify-between">
+          <span>❤️ 心拍数</span>
+          <span class="text-sm text-gray-400">(リラックス ↔ 興奮)</span>
+        </label>
+        <input id="hrSlider" type="range" min="60" max="160" value="70"
+          class="w-full h-3 bg-gray-600 rounded-lg appearance-none cursor-pointer mt-2 accent-rose-400"
+          aria-label="心拍数調整">
+      </div>
+    </div>
+  </div>
+
+  <!-- 外部スクリプト -->
+  <script src="main.js"></script>
 </body>
 </html>
